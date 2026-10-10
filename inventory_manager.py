@@ -63,7 +63,40 @@ def view_inventory(inventory):
         print(f"{number}. {item['name']} | {item['category']} | Quantity: {item['quantity']}")
 
 def add_item(inventory):
-    ...
+    """Prompt the user for an item and add it to the inventory list."""
+
+    name = input("Enter item name: ").strip().lower()
+    if not name:
+        print("A task cannot be empty.")
+        return
+    if "|" in name:
+        print("Name cannot contain '|'.")
+        return
+    if any(existing["name"].lower() == name for existing in inventory):
+        print("Duplicate items are not allowed.")
+        return
+
+    category = input("Enter the category: ").strip().lower()
+    if not category:
+            print("A task cannot be empty.")
+            return
+    if "|" in category:
+            print("Category cannot contain '|'.")
+            return
+
+    quantity = input("Enter the quantity: ").strip()
+    if not quantity.isdigit():
+            print("Quantity must be a nonnegative whole number.")
+            return
+
+    item = {
+        "name": name,
+        "category": category,
+        "quantity": int(quantity)
+    }
+
+    inventory.append(item)
+    print("Item added successfully.")
 
 def update_quantity(inventory):
     ...
@@ -86,9 +119,9 @@ def main():
 
         if choice == "1":
             view_inventory(inventory)
-
         elif choice == "2":
-            ...
+            add_item(inventory)
+            save_inventory(inventory, INVENTORY_FILE)
         elif choice == "3":
             ...
         elif choice == "4":
