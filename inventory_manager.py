@@ -99,7 +99,40 @@ def add_item(inventory):
     print("Item added successfully.")
 
 def update_quantity(inventory):
-    ...
+    """Let the user pick an item and change its quantity."""
+
+    if not inventory:
+        print("No inventory items found.")
+        return False
+
+    view_inventory(inventory)
+
+    selection = input("Enter the item number to update: ").strip()
+    if not selection.isdigit():
+        print("Please enter a valid item number.")
+        return False
+    
+    item_number = int(selection)
+    if item_number < 1 or item_number > len(inventory):
+        print(f"Item number must be between 1 and {len(inventory)}.")
+        return False
+
+    new_quantity = input("Enter the quantity: ").strip()
+    try:
+        new_quantity = int(new_quantity)
+    except ValueError:
+        print("Quantity must be a whole number.")
+        return False
+
+    if new_quantity < 0:
+        print("Quantity cannot be negative.")
+        return False
+
+    item = inventory[item_number - 1]
+    item["quantity"] = new_quantity
+    print(f"{item['name']} quantity updated to {new_quantity}.")
+
+    return True
 
 def remove_item(inventory):
     ...
@@ -123,7 +156,8 @@ def main():
             add_item(inventory)
             save_inventory(inventory, INVENTORY_FILE)
         elif choice == "3":
-            ...
+            update_quantity(inventory)
+            save_inventory(inventory, INVENTORY_FILE)
         elif choice == "4":
             ...
         elif choice == "5":
