@@ -172,7 +172,32 @@ def search_inventory(inventory):
         print(f"{number}. {item['name']} | {item['category']} | Quantity: {item['quantity']}")
 
 def display_summary(inventory):
-    ...
+    """Display a summary of the inventory including unique items, total quantity, and low stock items"""
+
+    total_items = 0
+    low_stock = 0
+    categories = {}
+
+    for item in inventory:
+
+        total_items += item['quantity']
+
+        if item['quantity'] <= 5:
+            low_stock += 1
+
+        category = item['category']
+        categories[category] = categories.get(category, 0) + 1
+
+    print("Inventory Summary")
+    print(f"Unique items: {len(inventory)}")
+    print(f"Total quantity: {total_items}")
+    print(f"Low-stock items: {low_stock}")
+    print("")
+    print("Items by category: ")
+
+    for category in categories:
+        print(f"{category}: {categories[category]}")
+
 
 def select_item_number(inventory):
     """Ask for an item number and return it, or None if the input is invalid."""
@@ -209,7 +234,7 @@ def main():
         elif choice == "5":
             search_inventory(inventory)
         elif choice == "6":
-            ...
+            display_summary(inventory)
         elif choice == "7":
             print("Goodbye!")
             break
