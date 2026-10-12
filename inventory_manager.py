@@ -52,6 +52,7 @@ def save_inventory(inventory, filename):
     with open(filename, "w") as file:
         for item in inventory:
             file.write(f"{item['name']}|{item['category']}|{item['quantity']}\n")
+            
 def view_inventory(inventory):
     """Print the inventory as a numbered list starting at 1."""
     if not inventory:
@@ -150,7 +151,25 @@ def remove_item(inventory):
     return True
 
 def search_inventory(inventory):
-    ...
+    """Prompt for part of an item name and display every matching item."""
+
+    search_term = input("Enter part or all of an item name: ").strip().lower()
+    if not search_term:
+        print("Search term cannot be empty.")
+        return
+
+    matches = []
+    for item in inventory:
+        if search_term in item["name"].lower():
+            matches.append(item)
+
+    if not matches:
+        print("No inventory items matched your search.")
+        return
+
+    print("Search results:")
+    for number, item in enumerate(matches, start=1):
+        print(f"{number}. {item['name']} | {item['category']} | Quantity: {item['quantity']}")
 
 def display_summary(inventory):
     ...
@@ -188,7 +207,7 @@ def main():
             remove_item(inventory)
             save_inventory(inventory, INVENTORY_FILE)
         elif choice == "5":
-            ...
+            search_inventory(inventory)
         elif choice == "6":
             ...
         elif choice == "7":
