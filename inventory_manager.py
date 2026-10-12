@@ -90,8 +90,8 @@ def add_item(inventory):
             return
 
     item = {
-        "name": name,
-        "category": category,
+        "name": name.title(),
+        "category": category.title(),
         "quantity": int(quantity)
     }
 
@@ -107,17 +107,11 @@ def update_quantity(inventory):
 
     view_inventory(inventory)
 
-    selection = input("Enter the item number to update: ").strip()
-    if not selection.isdigit():
-        print("Please enter a valid item number.")
-        return False
-    
-    item_number = int(selection)
-    if item_number < 1 or item_number > len(inventory):
-        print(f"Item number must be between 1 and {len(inventory)}.")
+    item_number = select_item_number(inventory)
+    if item_number is None:
         return False
 
-    new_quantity = input("Enter the quantity: ").strip()
+    new_quantity = input("Enter the new quantity: ").strip()
     try:
         new_quantity = int(new_quantity)
     except ValueError:
@@ -135,13 +129,45 @@ def update_quantity(inventory):
     return True
 
 def remove_item(inventory):
-    ...
+    """Prompt the user to select and remove an item.
+    
+        Return True when a item is removed and False otherwise.
+        """
+    if not inventory:
+            print("No items are available to remove.")
+            return False
+    
+    view_inventory(inventory)
+
+    item_number = select_item_number(inventory)
+    if item_number is None:
+            return False
+
+    removed_item = inventory.pop(item_number - 1)
+    
+    print(f"'{removed_item['name']}' has been removed.")
+    
+    return True
 
 def search_inventory(inventory):
     ...
 
 def display_summary(inventory):
     ...
+
+def select_item_number(inventory):
+    """Ask for an item number and return it, or None if the input is invalid."""
+
+    selection = input("Please enter item number: ").strip()
+    if not selection.isdigit():
+        print("Please enter a valid item number.")
+        return None
+        
+    item_number = int(selection)
+    if item_number < 1 or item_number > len(inventory):
+        print(f"Item number must be between 1 and {len(inventory)}.")
+        return None
+    return item_number
 
 def main():
     """Run the InverntoryManager menu until the user chooses to exit."""
@@ -159,7 +185,8 @@ def main():
             update_quantity(inventory)
             save_inventory(inventory, INVENTORY_FILE)
         elif choice == "4":
-            ...
+            remove_item(inventory)
+            save_inventory(inventory, INVENTORY_FILE)
         elif choice == "5":
             ...
         elif choice == "6":

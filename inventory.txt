@@ -1,1 +1,1 @@
-item|category|1
+Phone|Electronics|3
