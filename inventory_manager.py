@@ -7,9 +7,9 @@ Project: Inventory Manager
 
 INVENTORY_FILE = "inventory.txt"
 
-
 def display_menu():
     """Display the available InventoryManager menu options."""
+
     print("\nInventoryManager Menu")
     print("1. View Inventory")
     print("2. Add an item")
@@ -49,6 +49,7 @@ def load_inventory(filename):
 
 def save_inventory(inventory, filename):
     """Write the complete current inventory to the file, one item per line."""
+
     with open(filename, "w") as file:
         for item in inventory:
             file.write(f"{item['name']}|{item['category']}|{item['quantity']}\n")
@@ -68,7 +69,7 @@ def add_item(inventory):
 
     name = input("Enter item name: ").strip().lower()
     if not name:
-        print("A task cannot be empty.")
+        print("Name cannot be empty.")
         return
     if "|" in name:
         print("Name cannot contain '|'.")
@@ -134,6 +135,7 @@ def remove_item(inventory):
     
         Return True when a item is removed and False otherwise.
         """
+    
     if not inventory:
             print("No items are available to remove.")
             return False
@@ -215,7 +217,9 @@ def select_item_number(inventory):
 
 def main():
     """Run the InverntoryManager menu until the user chooses to exit."""
+
     inventory = load_inventory(INVENTORY_FILE)
+
     while True:
         display_menu()
         choice = input("Choose an option: ")

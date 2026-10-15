@@ -1,5 +1,5 @@
 Phone|Electronics|3
 Apple Watch|Electronics|6
-Paper|Office Supplies|4
 Paper Clips|Office Supplies|13
 Watermelon|Groceries|4
+Laptop|Electronics|2
