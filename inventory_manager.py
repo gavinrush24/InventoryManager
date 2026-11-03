@@ -1,17 +1,15 @@
-"""An command line inventory manager created for CPS 310.
-
-Author: Gavin Rush
-Course: CPS 310
-Project: Inventory Manager
+"""CPS 310 - Homework 1: Inventory Manager
+Instructor solution checkpoint.
 """
 
 INVENTORY_FILE = "inventory.txt"
+LOW_STOCK_THRESHOLD = 5
+
 
 def display_menu():
-    """Display the available InventoryManager menu options."""
-
-    print("\nInventoryManager Menu")
-    print("1. View Inventory")
+    """Display the main Inventory Manager menu."""
+    print("\nInventory Manager")
+    print("1. View inventory")
     print("2. Add an item")
     print("3. Update an item quantity")
     print("4. Remove an item")
@@ -21,220 +19,212 @@ def display_menu():
 
 
 def load_inventory(filename):
-    """Read inventory.txt and return a list of item dictionaries.
- 
-    Each line looks like: Name|Category|Quantity
-    If the file doesn't exist, an empty inventory is returned.
-    """
+    """Load inventory records from a pipe-delimited text file."""
     inventory = []
- 
+
     try:
-        with open(filename, "r") as file:
+        with open(filename, "r", encoding="utf-8") as file:
             for line in file:
                 line = line.strip()
-                if not line:  # skip empty lines
+                if not line:
                     continue
- 
+
                 name, category, quantity = line.split("|")
-                item = {
-                    "name": name.strip(),
-                    "category": category.strip(),
-                    "quantity": int(quantity.strip()),
-                }
-                inventory.append(item)
+                inventory.append(
+                    {
+                        "name": name,
+                        "category": category,
+                        "quantity": int(quantity),
+                    }
+                )
     except FileNotFoundError:
-        return []  # start with an empty inventory instead of crashing
- 
+        return []
+
     return inventory
 
-def save_inventory(inventory, filename):
-    """Write the complete current inventory to the file, one item per line."""
 
-    with open(filename, "w") as file:
+def save_inventory(inventory, filename):
+    """Save the complete inventory to a pipe-delimited text file."""
+    with open(filename, "w", encoding="utf-8") as file:
         for item in inventory:
-            file.write(f"{item['name']}|{item['category']}|{item['quantity']}\n")
-            
+            file.write(
+                f'{item["name"]}|{item["category"]}|{item["quantity"]}\n'
+            )
+
+
 def view_inventory(inventory):
-    """Print the inventory as a numbered list starting at 1."""
+    """Display all inventory items in a numbered list."""
     if not inventory:
         print("No inventory items found.")
         return
- 
-    print("Inventory:")
-    for number, item in enumerate(inventory, start=1):
-        print(f"{number}. {item['name']} | {item['category']} | Quantity: {item['quantity']}")
+
+    print("\nInventory:")
+    for index, item in enumerate(inventory, start=1):
+        print(
+            f'{index}. {item["name"]} | {item["category"]} | '
+            f'Quantity: {item["quantity"]}'
+        )
+
 
 def add_item(inventory):
-    """Prompt the user for an item and add it to the inventory list."""
-
-    name = input("Enter item name: ").strip().lower()
+    """Prompt for and add one validated inventory item, then save it."""
+    name = input("Enter the item name: ").strip()
     if not name:
-        print("Name cannot be empty.")
+        print("Item name cannot be empty.")
         return
     if "|" in name:
-        print("Name cannot contain '|'.")
-        return
-    if any(existing["name"].lower() == name for existing in inventory):
-        print("Duplicate items are not allowed.")
+        print("Item name may not contain the | character.")
         return
 
-    category = input("Enter the category: ").strip().lower()
+    for item in inventory:
+        if item["name"].lower() == name.lower():
+            print("An item with that name already exists.")
+            return
+
+    category = input("Enter the category: ").strip()
     if not category:
-            print("A task cannot be empty.")
-            return
+        print("Category cannot be empty.")
+        return
     if "|" in category:
-            print("Category cannot contain '|'.")
-            return
+        print("Category may not contain the | character.")
+        return
 
-    quantity = input("Enter the quantity: ").strip()
-    if not quantity.isdigit():
-            print("Quantity must be a nonnegative whole number.")
-            return
+    quantity_text = input("Enter the quantity: ").strip()
+    if not quantity_text.isdigit():
+        print("Quantity must be a nonnegative whole number.")
+        return
 
-    item = {
-        "name": name.title(),
-        "category": category.title(),
-        "quantity": int(quantity)
-    }
-
-    inventory.append(item)
+    quantity = int(quantity_text)
+    inventory.append({"name": name, "category": category, "quantity": quantity})
+    save_inventory(inventory, INVENTORY_FILE)
     print("Item added successfully.")
 
-def update_quantity(inventory):
-    """Let the user pick an item and change its quantity."""
 
+def update_quantity(inventory):
+    """Prompt for an item number and replace its quantity, then save it."""
     if not inventory:
         print("No inventory items found.")
-        return False
+        return
 
     view_inventory(inventory)
+    selection_text = input("Enter the item number to update: ").strip()
+    if not selection_text.isdigit():
+        print("Item number must be a valid whole number.")
+        return
 
-    item_number = select_item_number(inventory)
-    if item_number is None:
-        return False
+    selection = int(selection_text)
+    if selection < 1 or selection > len(inventory):
+        print("Item number is outside the available range.")
+        return
 
-    new_quantity = input("Enter the new quantity: ").strip()
-    try:
-        new_quantity = int(new_quantity)
-    except ValueError:
-        print("Quantity must be a whole number.")
-        return False
+    quantity_text = input("Enter the new quantity: ").strip()
+    if not quantity_text.isdigit():
+        print("Quantity must be a nonnegative whole number.")
+        return
 
-    if new_quantity < 0:
-        print("Quantity cannot be negative.")
-        return False
+    quantity = int(quantity_text)
+    item = inventory[selection - 1]
+    item["quantity"] = quantity
+    save_inventory(inventory, INVENTORY_FILE)
+    print(f'{item["name"]} quantity updated to {quantity}.')
 
-    item = inventory[item_number - 1]
-    item["quantity"] = new_quantity
-    print(f"{item['name']} quantity updated to {new_quantity}.")
-
-    return True
 
 def remove_item(inventory):
-    """Prompt the user to select and remove an item.
-    
-        Return True when a item is removed and False otherwise.
-        """
-    
+    """Prompt for an item number, remove that item, then save the inventory."""
     if not inventory:
-            print("No items are available to remove.")
-            return False
-    
+        print("No inventory items found.")
+        return
+
     view_inventory(inventory)
+    selection_text = input("Enter the item number to remove: ").strip()
+    if not selection_text.isdigit():
+        print("Item number must be a valid whole number.")
+        return
 
-    item_number = select_item_number(inventory)
-    if item_number is None:
-            return False
+    selection = int(selection_text)
+    if selection < 1 or selection > len(inventory):
+        print("Item number is outside the available range.")
+        return
 
-    removed_item = inventory.pop(item_number - 1)
-    
-    print(f"'{removed_item['name']}' has been removed.")
-    
-    return True
+    removed_item = inventory.pop(selection - 1)
+    save_inventory(inventory, INVENTORY_FILE)
+    print(f'Item removed: {removed_item["name"]}')
+
 
 def search_inventory(inventory):
-    """Prompt for part of an item name and display every matching item."""
-
-    search_term = input("Enter part or all of an item name: ").strip().lower()
+    """Prompt for an item-name search term and display matching items."""
+    search_term = input("Enter part or all of an item name: ").strip()
     if not search_term:
         print("Search term cannot be empty.")
         return
 
     matches = []
     for item in inventory:
-        if search_term in item["name"].lower():
+        if search_term.lower() in item["name"].lower():
             matches.append(item)
 
     if not matches:
         print("No inventory items matched your search.")
         return
 
-    print("Search results:")
-    for number, item in enumerate(matches, start=1):
-        print(f"{number}. {item['name']} | {item['category']} | Quantity: {item['quantity']}")
+    print("\nSearch Results:")
+    for index, item in enumerate(matches, start=1):
+        print(
+            f'{index}. {item["name"]} | {item["category"]} | '
+            f'Quantity: {item["quantity"]}'
+        )
+
 
 def display_summary(inventory):
-    """Display a summary of the inventory including unique items, total quantity, and low stock items"""
-
-    total_items = 0
-    low_stock = 0
-    categories = {}
+    """Calculate and display inventory summary information."""
+    unique_items = len(inventory)
+    total_quantity = 0
+    low_stock_items = 0
+    category_counts = {}
+    category_labels = {}
 
     for item in inventory:
+        total_quantity += item["quantity"]
 
-        total_items += item['quantity']
+        if item["quantity"] < LOW_STOCK_THRESHOLD:
+            low_stock_items += 1
 
-        if item['quantity'] <= 5:
-            low_stock += 1
+        category_key = item["category"].lower()
+        if category_key not in category_counts:
+            category_counts[category_key] = 0
+            category_labels[category_key] = item["category"]
+        category_counts[category_key] += 1
 
-        category = item['category']
-        categories[category] = categories.get(category, 0) + 1
+    print("\nInventory Summary")
+    print(f"Unique items: {unique_items}")
+    print(f"Total quantity: {total_quantity}")
+    print(f"Low-stock items: {low_stock_items}")
+    print("\nItems by category:")
 
-    print("Inventory Summary")
-    print(f"Unique items: {len(inventory)}")
-    print(f"Total quantity: {total_items}")
-    print(f"Low-stock items: {low_stock}")
-    print("")
-    print("Items by category: ")
+    if not category_counts:
+        print("No categories found.")
+        return
 
-    for category in categories:
-        print(f"{category}: {categories[category]}")
+    for category_key, count in category_counts.items():
+        print(f"{category_labels[category_key]}: {count}")
 
-
-def select_item_number(inventory):
-    """Ask for an item number and return it, or None if the input is invalid."""
-
-    selection = input("Please enter item number: ").strip()
-    if not selection.isdigit():
-        print("Please enter a valid item number.")
-        return None
-        
-    item_number = int(selection)
-    if item_number < 1 or item_number > len(inventory):
-        print(f"Item number must be between 1 and {len(inventory)}.")
-        return None
-    return item_number
 
 def main():
-    """Run the InverntoryManager menu until the user chooses to exit."""
-
+    """Run the Inventory Manager menu loop."""
     inventory = load_inventory(INVENTORY_FILE)
 
     while True:
         display_menu()
-        choice = input("Choose an option: ")
+        choice = input("Choose an option (1-7): ").strip()
 
         if choice == "1":
             view_inventory(inventory)
         elif choice == "2":
             add_item(inventory)
-            save_inventory(inventory, INVENTORY_FILE)
         elif choice == "3":
             update_quantity(inventory)
-            save_inventory(inventory, INVENTORY_FILE)
         elif choice == "4":
             remove_item(inventory)
-            save_inventory(inventory, INVENTORY_FILE)
         elif choice == "5":
             search_inventory(inventory)
         elif choice == "6":
@@ -242,6 +232,9 @@ def main():
         elif choice == "7":
             print("Goodbye!")
             break
+        else:
+            print("Please enter a menu option from 1 through 7.")
+
 
 if __name__ == "__main__":
     main()

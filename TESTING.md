@@ -1,33 +1,21 @@
-# Inventory Manager Testing
+# Inventory Manager Manual Testing Record
+
+This file records the manual testing performed for the Homework 1 solution checkpoint. Homework 2 adds automated pytest tests; this manual record should remain in the repository for comparison.
 
 | # | Feature | Input or Action | Expected Result | Actual Result | Pass/Fail |
-
 |---|---|---|---|---|---|
-
-| 1 | Load inventory | start the program with no inventory.txt file | return an empty list | returns an empty list '[]' with no error | Pass |
-
-| 2 | View inventory | start the program with an empty inventory (inventory = []) | return a message saying 'no inventory items found' | message returned with no errors | Pass |
-
-| 3 | Adding a valid item | select option 2 and enter name, category and quantity | item gets added to inventory and saved to inventory.txt | Item added to inventory annd saved to inventory.txt | Pass |
-
-| 4 | Rejecting empty item name | select option 2 to add an item and enter a blank line | return a message saying 'name cannot be empty' | message is returned | Pass |
-
-| 5 | Rejecting duplicate item name | select option 2 to add an item and enter a name of an item that already exists in the inventory | return a message saying 'duplicate items are not allowed' | message is returned | Pass |
-
-| 6 | Rejecting nonnumeric quantity | select option 2 to add an item and enter a letter for the quantity | return a message saying 'Quantity must be a nonnegative whole number' | message is returned | Pass |
-
-| 7 | Rejecting a negative quantity | select option 2 to add an item and enter a negative number for the quantity | return a message saying 'Quantity must be a nonnegative whole number' | message is returned | Pass |
-
-| 8 | Updating a valid item | Select option 3, pick an item to update, and update its quantity | update inventory with new quantity and return a confirmation message | inventory was file was updated and confirmation message was returned | Pass |
-
-| 9 | Rejecting an invalid item number | when updating or adding an item choose a number out of the range | exit the function and return a message displaying the valid choices | Returns to main menu and gives error message | Pass |
-
-| 10 | Removing an item | Select option 4, choose an item number from the list | Item is removed from the inventory, a confirmation message with the item's name is displayed, and the change is saved to inventory.txt | Pass |
-
-| 11 | Case-insensitive partial search | Select option 5 and enter part of an item name in different capitalization | Every item whose name contains the search text is displayed, regardless of capitalization | Pass |
-
-| 12 | Searching when no matches exist | Select option 5 and enter text that matches no item name | Message displayed is 'No inventory items matched your search.' | Pass |
-
-| 13 | Verifying the inventory summary | Add a few items with different categories and quantities (include one with quantity 5 or less), then select option 6 | Unique items, total quantity, and low-stock count match the inventory, and each category is listed with the correct number of items | | Pass |
-
-| 14 | Restarting the program and confirming persistence | Add, update, or remove an item, exit with option 7, restart the program, and select option 1 | The inventory shown after restarting matches the inventory before exiting, with all changes still present | Pass |
+| 1 | Missing file | Start when `inventory.txt` does not exist | Program begins with an empty inventory | Program began normally with an empty inventory | Pass |
+| 2 | Empty inventory | View an empty inventory | `No inventory items found.` | Correct message displayed | Pass |
+| 3 | Add item | Add `HDMI Cable`, `Electronics`, `6` | Item is added and saved | Item added and saved | Pass |
+| 4 | Empty name | Enter only whitespace for item name | Item is rejected | Item was rejected | Pass |
+| 5 | Duplicate name | Add `laptop charger` when `Laptop Charger` exists | Duplicate is rejected | Duplicate was rejected | Pass |
+| 6 | Nonnumeric quantity | Enter `six` for quantity | Quantity is rejected | Quantity was rejected | Pass |
+| 7 | Negative quantity | Enter `-2` for quantity | Quantity is rejected | Quantity was rejected | Pass |
+| 8 | Update item | Update item 1 to quantity `12` | Correct item changes to 12 and is saved | Correct item updated and saved | Pass |
+| 9 | Invalid item number | Enter an item number beyond the list length | Selection is rejected without crashing | Selection was rejected | Pass |
+| 10 | Remove item | Remove an existing numbered item | Correct item is removed and saved | Correct item removed and saved | Pass |
+| 11 | Partial search | Search for `charger` | Matching charger items are displayed | Matching items displayed | Pass |
+| 12 | Case-insensitive search | Search using different capitalization | Matching item is still found | Matching item found | Pass |
+| 13 | No search matches | Search for text not found in any name | No-match message is displayed | Correct message displayed | Pass |
+| 14 | Inventory summary | View summary with known sample data | Unique count, total quantity, low-stock count, and category counts are correct | Summary values were correct | Pass |
+| 15 | Persistence | Make a change, exit, and restart | Saved change remains after restart | Change remained after restart | Pass |
