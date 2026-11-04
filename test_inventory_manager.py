@@ -394,3 +394,131 @@ def test_parse_nonnegative_int_rejects_negative_quantity_text():
 
     # Assert
     assert result is None
+
+# Add-Item validation tests
+"""Tests for validating new inventory items."""
+
+def test_valid_item_passes_all_validation(sample_inventory):
+    # Arrange
+    name = "Tablet"
+    category = "Electronics"
+    quantity_text = "12"
+
+    # Act
+    name_error = validate_item_name(sample_inventory, name)
+    category_error = validate_category(category)
+    quantity = parse_nonnegative_int(quantity_text)
+
+    # Assert
+    assert name_error is None
+    assert category_error is None
+    assert quantity == 12
+
+
+def test_add_item_to_inventory_appends_new_item(sample_inventory):
+    # Arrange
+    name = "  Tablet "
+    category = " Electronics  "
+    quantity = 12
+
+    # Act
+    added_item = add_item_to_inventory(sample_inventory, name, category, quantity)
+
+    # Assert
+    expected_item = {"name": "Tablet", "category": "Electronics", "quantity": 12}
+    assert added_item == expected_item
+    assert len(sample_inventory) == 5
+    assert sample_inventory[-1] == expected_item
+
+
+def test_empty_item_name_is_rejected(sample_inventory):
+    # Arrange
+    name = ""
+
+    # Act
+    error = validate_item_name(sample_inventory, name)
+
+    # Assert
+    assert error == "Item name cannot be empty."
+
+
+def test_empty_category_is_rejected(sample_inventory):
+    # Arrange
+    category = ""
+
+    # Act
+    error = validate_category(category)
+
+    # Assert
+    assert error == "Category cannot be empty."
+
+
+def test_pipe_in_item_name_is_rejected(sample_inventory):
+    # Arrange
+    name = "Smart|Watch"
+
+    # Act
+    error = validate_item_name(sample_inventory, name)
+
+    # Assert
+    assert error == "Item name may not contain the | character."
+
+
+def test_pipe_in_category_is_rejected():
+    # Arrange
+    category = "Home|Office"
+
+    # Act
+    error = validate_category(category)
+
+    # Assert
+    assert error == "Category may not contain the | character."
+
+
+def test_negative_quantity_is_rejected():
+    # Arrange
+    quantity_text = "-5"
+
+    # Act
+    quantity = parse_nonnegative_int(quantity_text)
+
+    # Assert
+    assert quantity is None
+
+
+@pytest.mark.parametrize(
+    "quantity_text",
+    ["abc", "12abc", "3.5", ""],
+    ids=["letters", "digits_then_letters", "decimal", "empty"],
+)
+def test_nonnumeric_quantity_is_rejected(quantity_text):
+    # Arrange
+    # (quantity_text is provided by pytest)
+
+    # Act
+    quantity = parse_nonnegative_int(quantity_text)
+
+    # Assert
+    assert quantity is None
+
+
+def test_duplicate_item_name_is_rejected(sample_inventory):
+    # Arrange
+    name = "Phone"
+
+    # Act
+    error = validate_item_name(sample_inventory, name)
+
+    # Assert
+    assert error == "An item with that name already exists."
+
+
+def test_duplicate_item_name_with_different_capitalization_is_rejected(sample_inventory):
+    # Arrange
+    name = "PHONE"
+
+    # Act
+    error = validate_item_name(sample_inventory, name)
+
+    # Assert
+    assert error == "An item with that name already exists."
