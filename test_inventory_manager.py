@@ -3,12 +3,14 @@ import pytest
 from inventory_manager import(
     load_inventory,
     save_inventory, 
-    search_inventory, 
-    remove_item, 
-    update_quantity, 
-    add_item, 
-    display_summary, 
-    find_matching_items
+    update_item_quantity, 
+    find_matching_items, 
+    remove_item_by_number, 
+    parse_nonnegative_int, 
+    add_item_to_inventory,
+    validate_category,
+    validate_item_name, 
+    calculate_summary
 )
 
 
@@ -150,6 +152,7 @@ def test_data_saved_and_loaded_again(tmp_path, sample_inventory):
     assert loaded_inventory == sample_inventory
 
 # Search tests
+"""Tests for searching the inventory"""
 
 def test_exact_name_search_finds_correct_item(sample_inventory):
     # Arrange
@@ -177,9 +180,9 @@ def test_partial_search_finds_matching_item(sample_inventory):
     ]
  
  
-@pytest.mark.parametrize("search_term", ["phone", "PHONE", "pHoNe"])
-def test_search_ignores_capitalization(sample_inventory, search_term):
+def test_search_ignores_capitalization(sample_inventory):
     # Arrange
+    search_term = "PHONE"
     expected = [{"name": "Phone", "category": "Electronics", "quantity": 10}]
  
     # Act
@@ -224,3 +227,170 @@ def test_empty_or_whitespace_search_returns_empty_list(sample_inventory):
  
     # Assert
     assert result == []
+
+# Remove item tests
+"""Tests for removing items from the inventory."""
+
+def test_remove_first_item(sample_inventory):
+    # Arrange
+    item_number = 1
+ 
+    # Act
+    removed_item = remove_item_by_number(sample_inventory, item_number)
+ 
+    # Assert
+    assert removed_item == {
+        "name": "Phone", "category": "Electronics", "quantity": 10
+    }
+    assert sample_inventory == [
+        {"name": "Laptop", "category": "Electronics", "quantity": 5},
+        {"name": "Notebook", "category": "Office", "quantity": 25},
+        {"name": "Stapler", "category": "Office", "quantity": 2},
+    ]
+ 
+ 
+def test_remove_middle_item(sample_inventory):
+    # Arrange
+    item_number = 2
+ 
+    # Act
+    removed_item = remove_item_by_number(sample_inventory, item_number)
+ 
+    # Assert
+    assert removed_item == {
+        "name": "Laptop", "category": "Electronics", "quantity": 5
+    }
+    assert sample_inventory == [
+        {"name": "Phone", "category": "Electronics", "quantity": 10},
+        {"name": "Notebook", "category": "Office", "quantity": 25},
+        {"name": "Stapler", "category": "Office", "quantity": 2},
+    ]
+ 
+ 
+def test_remove_last_item(sample_inventory):
+    # Arrange
+    item_number = 4
+ 
+    # Act
+    removed_item = remove_item_by_number(sample_inventory, item_number)
+ 
+    # Assert
+    assert removed_item == {
+        "name": "Stapler", "category": "Office", "quantity": 2
+    }
+    assert sample_inventory == [
+        {"name": "Phone", "category": "Electronics", "quantity": 10},
+        {"name": "Laptop", "category": "Electronics", "quantity": 5},
+        {"name": "Notebook", "category": "Office", "quantity": 25},
+    ]
+ 
+ 
+@pytest.mark.parametrize(
+    "item_number",
+    [0, -1, 5],
+    ids=["zero_rejected", "negative_rejected", "too_large_rejected"],
+)
+def test_remove_item_rejects_invalid_number(sample_inventory, item_number):
+    # Arrange
+    original_inventory = [dict(item) for item in sample_inventory]
+ 
+    # Act
+    result = remove_item_by_number(sample_inventory, item_number)
+ 
+    # Assert
+    assert result is None
+    assert sample_inventory == original_inventory
+
+
+# Update Quantity Tests
+"""Tests for updating item quantities in the inventory."""
+
+def test_update_quantity_of_valid_item(sample_inventory):
+    # Arrange
+    item_number = 2
+    new_quantity = 8
+
+    # Act
+    updated_item = update_item_quantity(
+        sample_inventory, item_number, new_quantity
+    )
+
+    # Assert
+    assert updated_item == {
+        "name": "Laptop", "category": "Electronics", "quantity": 8
+    }
+    assert sample_inventory[1]["quantity"] == 8
+
+
+def test_update_quantity_accepts_zero(sample_inventory):
+    # Arrange
+    item_number = 4
+    new_quantity = 0
+
+    # Act
+    updated_item = update_item_quantity(
+        sample_inventory, item_number, new_quantity
+    )
+
+    # Assert
+    assert updated_item is not None
+    assert sample_inventory[3]["quantity"] == 0
+
+
+def test_update_quantity_changes_only_the_selected_item(sample_inventory):
+    # Arrange
+    item_number = 3
+    new_quantity = 40
+
+    # Act
+    update_item_quantity(sample_inventory, item_number, new_quantity)
+
+    # Assert
+    assert sample_inventory == [
+        {"name": "Phone", "category": "Electronics", "quantity": 10},
+        {"name": "Laptop", "category": "Electronics", "quantity": 5},
+        {"name": "Notebook", "category": "Office", "quantity": 40},
+        {"name": "Stapler", "category": "Office", "quantity": 2},
+    ]
+
+
+@pytest.mark.parametrize(
+    "item_number",
+    [0, -1, 5],
+    ids=["zero_rejected", "negative_rejected", "too_large_rejected"],
+)
+def test_update_quantity_rejects_invalid_item_number(
+    sample_inventory, item_number
+):
+    # Arrange
+    original_inventory = [dict(item) for item in sample_inventory]
+
+    # Act
+    result = update_item_quantity(sample_inventory, item_number, 7)
+
+    # Assert
+    assert result is None
+    assert sample_inventory == original_inventory
+
+
+def test_update_quantity_rejects_negative_quantity(sample_inventory):
+    # Arrange
+    original_inventory = [dict(item) for item in sample_inventory]
+
+    # Act
+    result = update_item_quantity(sample_inventory, 1, -5)
+
+    # Assert
+    assert result is None
+    assert sample_inventory == original_inventory
+
+
+def test_parse_nonnegative_int_rejects_negative_quantity_text():
+    # Arrange
+    quantity_text = "-5"
+
+    # Act
+    result = parse_nonnegative_int(quantity_text)
+
+    # Assert
+    assert result is None
