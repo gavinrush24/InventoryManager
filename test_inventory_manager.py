@@ -395,6 +395,7 @@ def test_parse_nonnegative_int_rejects_negative_quantity_text():
     # Assert
     assert result is None
 
+
 # Add-Item validation tests
 """Tests for validating new inventory items."""
 
@@ -522,3 +523,101 @@ def test_duplicate_item_name_with_different_capitalization_is_rejected(sample_in
 
     # Assert
     assert error == "An item with that name already exists."
+
+
+# Inventory Summary Tests
+"""Tests for inventory summary calculations."""
+
+def test_summary_counts_unique_items(sample_inventory):
+    # Arrange
+    # (sample_inventory is provided by the fixture)
+
+    # Act
+    summary = calculate_summary(sample_inventory)
+
+    # Assert
+    assert summary["unique_items"] == 4
+
+
+def test_summary_calculates_total_quantity(sample_inventory):
+    # Arrange
+    # (10 + 5 + 25 + 2 = 42)
+
+    # Act
+    summary = calculate_summary(sample_inventory)
+
+    # Assert
+    assert summary["total_quantity"] == 42
+
+
+def test_summary_counts_low_stock_items(sample_inventory):
+    # Arrange
+    # (only Stapler, quantity 2, is below 5)
+
+    # Act
+    summary = calculate_summary(sample_inventory)
+
+    # Assert
+    assert summary["low_stock_items"] == 1
+
+
+@pytest.mark.parametrize(
+    "quantity, expected_low_stock_count",
+    [
+        (4, 1),
+        (5, 0),
+    ],
+    ids=["quantity_4_is_low_stock", "quantity_5_is_not_low_stock"],
+)
+def test_low_stock_boundary(quantity, expected_low_stock_count):
+    # Arrange
+    inventory = [{"name": "Widget", "category": "Parts", "quantity": quantity}]
+
+    # Act
+    summary = calculate_summary(inventory)
+
+    # Assert
+    assert summary["low_stock_items"] == expected_low_stock_count
+
+
+def test_summary_counts_items_by_category(sample_inventory):
+    # Arrange
+    # (2 Electronics items and 2 Office items)
+
+    # Act
+    summary = calculate_summary(sample_inventory)
+
+    # Assert
+    assert summary["category_counts"] == {"Electronics": 2, "Office": 2}
+
+
+def test_category_counts_ignore_capitalization():
+    # Arrange
+    inventory = [
+        {"name": "Phone", "category": "Electronics", "quantity": 10},
+        {"name": "Laptop", "category": "electronics", "quantity": 5},
+        {"name": "Tablet", "category": "ELECTRONICS", "quantity": 7},
+        {"name": "Stapler", "category": "Office", "quantity": 2},
+    ]
+
+    # Act
+    summary = calculate_summary(inventory)
+
+    # Assert
+    assert summary["category_counts"] == {"Electronics": 3, "Office": 1}
+
+
+def test_empty_inventory_summary():
+    # Arrange
+    inventory = []
+
+    # Act
+    summary = calculate_summary(inventory)
+
+    # Assert
+    assert summary == {
+        "unique_items": 0,
+        "total_quantity": 0,
+        "low_stock_items": 0,
+        "category_counts": {},
+    }
