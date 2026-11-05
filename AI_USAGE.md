@@ -6,12 +6,18 @@ Claude and ChatGPT
 
 ## How AI Was Used
 
+### Homwork 1
 - Most functions have some sort of AI use when writing them and a few were mostly written by AI. 
 - Used for suggestions in function testing
 - helped make sure that each function met its requirments for the homework assignment
 
+### Homework 2
+- AI was used to refactor code to make it easily testable
+- Also used to create units tests
+
 ## Example Prompts
 
+### Homwork 1
 ```text
 can you take this function and help with the few requirements that i havent met
 
@@ -41,12 +47,25 @@ def select_item_number(inventory):
     return item_number
 ```
 
+### Homwork 2
+```text
+take these instructions and refactor the file I give you to make sure the code is easily testable. Then give me a summary of what functions you changed so i can manually look over them
+```
+```text
+can you explain line 69 and how that logic works
+```
+
 ## Suggestions Accepted
 
+### Homwork 1
 I was trying to make a helper function that was used to select an item number and I kept running into issues. Claude suggested that I replace the 'return False' with 'return None' and then set use an if statement to check if item_number is None and then return false and it fixed my issue. 
+
+### Homwork 2
+I was trying to figure out where to implement my fixtures and it suggested that I put one to test the different cases for the `test_nonnumeric_quantity_is_rejected` function and i used that suggestion
 
 ## Suggestions Rejected or Modified
 
+### Homwork 1
 There was one line of code that was suggested by claude but i didnt know how the flow worked and so i changed it into a few lines that I know I would be able to explain. 
 
 Suggestion: 
@@ -61,14 +80,19 @@ for item in inventory:
         matches.append(item)
 ```
 
+### Homwork 2
+There were two test functions that AI suggested I use parameterization but It seemed unnecesary so i deleted them
+
 ## Verification
 
+### Homwork 1 and 2
 - I read through each line of code that Cluade or ChatGPT gave me and Made sure that I knew what each line of code was doing. 
 - I also made sure that the recommendations it gave me would work with previous code that I had written already
 - tested all possiblities in my testing and everything that AI had suggestion works with no flaws 
 
 ## Code Understanding
 
+### Homwork 1
 1. Loading the inventory.txt file
 
 ```text
@@ -151,3 +175,29 @@ def update_quantity(inventory):
 - Takes the value of the item quantity from the dictionary and updates it with the new item quantity
 - displays a confirmation message with the item that was updated and the new quantity the user entered
 - returns true to exit function
+
+### Homwork 2
+
+```text
+@pytest.mark.parametrize(
+    "item_number",
+    [0, -1, 5],
+    ids=["zero_rejected", "negative_rejected", "too_large_rejected"],
+)
+def test_update_quantity_rejects_invalid_item_number(sample_inventory, item_number):
+    # Arrange
+    original_inventory = [dict(item) for item in sample_inventory]
+
+    # Act
+    result = update_item_quantity(sample_inventory, item_number, 7)
+
+    # Assert
+    assert result is None
+    assert sample_inventory == original_inventory
+    ```
+
+    - parameterization is used to test multiple different int cases without having to make multiple different test cases
+    - the fixture sample_inventory is used to reduce repeatbility 
+    - the original inventory is set so the each dictionary item is put into the original inventory for comparison later
+    - the result uses the item numbers from the parameterization to test the invalid cases and make sure they function properly
+    - since the item numbers are outside of the permited range the assert is making sure the result to None and setting the sample inventory to the original inventory because it shouldn't change
